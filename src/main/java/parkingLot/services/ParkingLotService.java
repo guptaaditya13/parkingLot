@@ -1,5 +1,8 @@
 package parkingLot.services;
 
+import parkingLot.Exceptions.ParkingSpaceEmptyException;
+import parkingLot.Exceptions.ParkingSpaceFullException;
+import parkingLot.Exceptions.UnknownParkingSpaceException;
 import parkingLot.model.parkingLevel.ParkingLevelFactory;
 import parkingLot.model.parkingLot.AbstractParkingLot;
 import parkingLot.model.parkingLot.ParkingLotFactory;
@@ -41,11 +44,11 @@ public class ParkingLotService {
         create(Constants.DEFAULT_LOT_TYPE, levels, slots, Constants.DEFAULT_LEVEL_TYPE, Constants.DEFAULT_LEVEL_SELECTION_STRATEGY, Constants.DEFAULT_SLOT_TYPE, Constants.DEFAULT_SLOT_SELECTION_STRATEGY);
     }
 
-    public ParkingTicket park(Vehicle vehicle){
+    public ParkingTicket park(Vehicle vehicle) throws ParkingSpaceFullException{
         return parkingLot.park(vehicle);
     }
 
-    public Vehicle release(String ticket){
+    public Vehicle release(String ticket) throws ParkingSpaceEmptyException, UnknownParkingSpaceException{
         return parkingLot.free(ParkingTicket.condensedSlotToList(ticket));
     }
 

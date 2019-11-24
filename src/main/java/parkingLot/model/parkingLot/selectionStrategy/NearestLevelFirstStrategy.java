@@ -1,5 +1,6 @@
 package parkingLot.model.parkingLot.selectionStrategy;
 
+import parkingLot.Exceptions.ParkingSpaceFullException;
 import parkingLot.model.parkingLevel.AbstractParkingLevel;
 import parkingLot.model.parkingTicket.ParkingTicket;
 import parkingLot.model.vehicle.Vehicle;
@@ -17,8 +18,12 @@ public class NearestLevelFirstStrategy implements LevelSelectionStrategy{
     }
 
     @Override
-    public AbstractParkingLevel nextLevel(Vehicle vehicle) {
-        return parkingLevels.poll();
+    public AbstractParkingLevel nextLevel(Vehicle vehicle) throws ParkingSpaceFullException {
+        AbstractParkingLevel parkingLevel = parkingLevels.poll();
+        if (parkingLevel == null){
+            throw new ParkingSpaceFullException();
+        }
+        return parkingLevel;
     }
 
     @Override

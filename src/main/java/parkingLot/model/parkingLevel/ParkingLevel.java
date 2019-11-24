@@ -1,6 +1,9 @@
 package parkingLot.model.parkingLevel;
 
 import org.apache.log4j.Logger;
+import parkingLot.Exceptions.ParkingSpaceEmptyException;
+import parkingLot.Exceptions.ParkingSpaceFullException;
+import parkingLot.Exceptions.UnknownParkingSpaceException;
 import parkingLot.model.parkingSlot.AbstractParkingSlot;
 import parkingLot.model.parkingSlot.ParkingSlotFactory;
 import parkingLot.model.parkingLevel.selectionStrategy.SelectionStrategy;
@@ -16,6 +19,7 @@ class ParkingLevel implements AbstractParkingLevel {
     private final Map<Integer, AbstractParkingSlot> occupiedParkingSlots;
     private SelectionStrategy selectionStrategy;
     private static final Logger log = Logger.getLogger(ParkingLevel.class);
+    private static int parkingSlots;
 
 
     public ParkingLevel(int id, int parkingSlots, SelectionStrategy selectionStrategy, ParkingSlotFactory parkingSlotFactory, String slotType) {
@@ -23,6 +27,7 @@ class ParkingLevel implements AbstractParkingLevel {
         occupiedParkingSlots = new HashMap<>(parkingSlots);
         this.selectionStrategy = selectionStrategy;
         createSlots(parkingSlots, parkingSlotFactory, slotType);
+        this.parkingSlots = parkingSlots;
     }
 
     @Override
@@ -50,7 +55,7 @@ class ParkingLevel implements AbstractParkingLevel {
     }
 
     @Override
-    public ParkingTicket park(Vehicle vehicle) {
+    public ParkingTicket park(Vehicle vehicle) throws ParkingSpaceFullException{
         log.debug("Parking :: " + vehicle);
         AbstractParkingSlot parkingSlot = selectionStrategy.nextSlot(vehicle);
         parkingSlot.park(vehicle);
@@ -62,11 +67,19 @@ class ParkingLevel implements AbstractParkingLevel {
     }
 
     @Override
-    public Vehicle free(List<Integer> slots){
+    public Vehicle free(List<Integer> slots) throws UnknownParkingSpaceException, ParkingSpaceEmptyException {
         log.debug("releasing :: " + slots);
-        AbstractParkingSlot parkingSlot = occupiedParkingSlots.remove(slots.get(0));
-        selectionStrategy.addSlot(parkingSlot);
-        return parkingSlot.free();
+        int key = slots.get(0);
+        if (occupiedParkingSlots.containsKey(key)) {
+            AbstractParkingSlot parkingSlot = occupiedParkingSlots.remove(key);
+            selectionStrategy.addSlot(parkingSlot);
+            return parkingSlot.free();
+        } else {
+            if (key <= parkingSlots && key > 0){
+                throw new ParkingSpaceEmptyException();
+            }
+            throw new UnknownParkingSpaceException();
+        }
     }
 
     private void createSlots(int count, ParkingSlotFactory parkingSlotFactory, String type){

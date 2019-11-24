@@ -1,11 +1,11 @@
 package parkingLot.model.parkingSlot;
 
 import org.apache.log4j.Logger;
-import parkingLot.model.parkingTicket.ParkingTicket;
-import parkingLot.model.parkingTicket.SimpleParkingTicket;
+import parkingLot.Exceptions.ParkingSpaceEmptyException;
+import parkingLot.Exceptions.ParkingSpaceFullException;
 import parkingLot.model.vehicle.Vehicle;
 
-class SimpleParkingSlot implements AbstractParkingSlot{
+class SimpleParkingSlot implements AbstractParkingSlot {
     private final int slotId;
     private Vehicle parkedVehicle;
     private static final Logger log = Logger.getLogger(SimpleParkingSlot.class);
@@ -15,12 +15,17 @@ class SimpleParkingSlot implements AbstractParkingSlot{
         this.slotId = slotId;
         parkedVehicle = null;
     }
+
     @Override
-    public Vehicle free(){
-        Vehicle vehicle = this.parkedVehicle;
-        this.parkedVehicle = null;
-        log.debug("released :: " + vehicle);
-        return vehicle;
+    public Vehicle free() throws ParkingSpaceEmptyException{
+        if (parkedVehicle != null) {
+            Vehicle vehicle = this.parkedVehicle;
+            this.parkedVehicle = null;
+            log.debug("released :: " + vehicle);
+            return vehicle;
+        } else {
+            throw new ParkingSpaceEmptyException();
+        }
     }
 
     @Override
@@ -33,8 +38,12 @@ class SimpleParkingSlot implements AbstractParkingSlot{
         return slotId;
     }
 
-    public void park(Vehicle vehicle) {
-        this.parkedVehicle = vehicle;
-        log.debug("parked :: " + parkedVehicle);
+    public void park(Vehicle vehicle) throws ParkingSpaceFullException {
+        if (this.parkedVehicle == null) {
+            this.parkedVehicle = vehicle;
+            log.debug("parked :: " + parkedVehicle);
+        } else {
+            throw new ParkingSpaceFullException();
+        }
     }
 }
